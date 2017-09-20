@@ -686,3 +686,14 @@ if (class_exists('Seravo_Custom_Bulk_Action')) {
   }
   add_action( 'admin_notices', 'bulk_action_dependency_notice' );
 }
+
+/* Make Poem Template re-writable */
+if ( $overridden_template != locate_template( 'single-prosody_poem.php' ) ) {
+    // locate_template() returns path to file
+    // if either the child theme or the parent theme have overridden the template
+    load_template( $overridden_template );
+// } else {
+    // If neither the child nor parent theme have overridden the template,
+    // we load the template from the 'templates' sub-directory of the directory this file is in
+    // load_template( dirname( __FILE__ ) . '/templates/single-prosody_poem.php' );
+}
