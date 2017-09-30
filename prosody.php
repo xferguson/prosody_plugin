@@ -687,13 +687,75 @@ if (class_exists('Seravo_Custom_Bulk_Action')) {
   add_action( 'admin_notices', 'bulk_action_dependency_notice' );
 }
 
+/* Template loading adapted from: https://pippinsplugins.com/template-file-loaders-plugins/ */
+/**
+ * Retrieve the name of the highest priority template file that exists.
+ *
+ * Searches in the STYLESHEETPATH before TEMPLATEPATH so that themes which
+ * inherit from a parent theme can just overload one file. If the template is
+ * not found in either of those, it looks in the theme-compat folder last.
+ *
+ * Taken from bbPress
+ *
+ * @since v1.5
+ *
+ * @param string|array $template_names Template file(s) to search for, in order.
+ * @param bool $load If true the template file will be loaded if it is found.
+ * @param bool $require_once Whether to require_once or require. Default true.
+ *                            Has no effect if $load is false.
+ * @return string The template filename if one is located.
+ */
+// function prosody_locate_template( $template_names, $load = false, $require_once = true ) {
+function prosody_locate_template( $template_name, $load = false, $require_once = true ) {
+    // No file found yet
+    $located = false;
+ 
+    // Try to find a template file
+    // foreach ( (array) $template_names as $template_name ) {
+ 
+        // Continue if template is empty
+        if ( empty( $template_name ) ) {
+            // continue;
+        }
+ 
+        // Trim off any slashes from the template name
+        $template_name = ltrim( $template_name, '/' );
+ 
+        // Check child theme first
+        if ( file_exists( trailingslashit( get_stylesheet_directory() ) . $template_name ) ) {
+            $located = trailingslashit( get_stylesheet_directory() ) . $template_name;
+            // break;
+ 
+        // Check parent theme next
+        } elseif ( file_exists( trailingslashit( get_template_directory() ) . $template_name ) ) {
+            $located = trailingslashit( get_template_directory() ) . $template_name;
+            // break;
+        }
+ 
+        if ( ( true == $load ) && ! empty( $located ) ) {
+            load_template( $located, $require_once );
+        }
+ 
+        return $located;
+    // }
+}
+
 /* Make Poem Template re-writable */
-if ( $overridden_template != locate_template( 'single-prosody_poem.php' ) ) {
+$single_poem_template = 'single-prosody_poem.php';
+$template_file = prosody_locate_template($single_poem_template);
+var_dump($template_file);
+if ($template_file) {
+    get_template_part("single", "prodosy_poem");
+} else {
+    load_template( dirname( __FILE__ ) . '/templates/' . $single_poem_template );
+}
+// if ( '' != $overridden_template) {
     // locate_template() returns path to file
     // if either the child theme or the parent theme have overridden the template
-    load_template( $overridden_template );
+    // locate_template( $overridden_template, true );
 // } else {
     // If neither the child nor parent theme have overridden the template,
     // we load the template from the 'templates' sub-directory of the directory this file is in
-    // load_template( dirname( __FILE__ ) . '/templates/single-prosody_poem.php' );
-}
+    // load_template( dirname( __FILE__ ) . '\\templates\\' . $single_poem_template );
+    // load_template( '\\templates\\' . $single_poem_template );
+// }
